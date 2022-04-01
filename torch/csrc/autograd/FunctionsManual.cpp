@@ -3448,12 +3448,13 @@ Tensor slogdet_backward(const Tensor& grad_logabsdet,
   };
 
   if (self.dim() == 2) {
-    bool is_singular = self.is_complex() ? signdet.abs().item<double>() == 0 : signdet.item<double>() == 0;
+    return nonsingular_case_backward(grad_logabsdet, self);
+    /*bool is_singular = self.is_complex() ? signdet.abs().item<double>() == 0 : signdet.item<double>() == 0;
     if (is_singular) {
       return singular_case_backward(grad_logabsdet, self);
     } else {
       return nonsingular_case_backward(grad_logabsdet, self);
-    }
+    }*/
   } else {
     auto nonzero_signdet_indices = at::native::toListOfOptionalTensors(self.is_complex() ? at::where(signdet.abs()) : at::where(signdet));
     c10::optional<Tensor> first_nonzero_signdet_index = nonzero_signdet_indices[0];

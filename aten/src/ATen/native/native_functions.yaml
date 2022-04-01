@@ -11253,3 +11253,12 @@
 
 - func: _nested_tensor(Tensor[] list, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
   variants: function
+  
+  
+#Custom Functions here...
+
+- func: summed_dets(Tensor matrices, Tensor log_envs) -> (Tensor sign, Tensor logabsdet)
+#  #dispatch:
+#  #  CompositeExplicitAutograd: summed_dets
+    
+

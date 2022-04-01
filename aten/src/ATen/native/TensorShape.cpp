@@ -2724,5 +2724,21 @@ at::Tensor diagonal_scatter(const at::Tensor& self, const at::Tensor& src, int64
     return output;
 }
 
+//Custom Functions here...
+std::tuple<at::Tensor, at::Tensor> summed_dets(const at::Tensor& matrices, const at::Tensor& log_envs){
+  at::Tensor input  = matrices * at::exp(log_envs);
+
+  auto [sign, logabsdet] = at::linalg_slogdet(input); //  torch::linalg::slogdet(input); //out;
+  auto [maxlogabsdet, indices] = at::max(logabsdet, -1, true);
+
+  auto scaled_dets = sign * at::exp( logabsdet - maxlogabsdet );
+  auto summed_scaled_dets = at::sum(scaled_dets, -1, true);
+  
+  auto global_logabs = (maxlogabsdet + summed_scaled_dets.abs().log()).squeeze(-1);
+  auto global_sign = (summed_scaled_dets.sign()).squeeze(-1); 
+
+  return std::make_tuple(global_sign, global_logabs);
+}
+
 } // namespace native
 } // namespace at
