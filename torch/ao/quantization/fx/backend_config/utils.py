@@ -18,8 +18,9 @@ def get_pattern_to_quantize_handlers(
         pattern = config["pattern"]
         observation_type = config["observation_type"]
         dtype_configs = config["dtype_configs"]
+        _is_binary_op_with_binary_scalar_op_variant = config.get("_is_binary_op_with_binary_scalar_op_variant", False)
         pattern_to_quantize_handlers[pattern] = \
-            get_quantize_handler_cls(observation_type, dtype_configs)
+            get_quantize_handler_cls(observation_type, dtype_configs, _is_binary_op_with_binary_scalar_op_variant)
 
     return pattern_to_quantize_handlers
 

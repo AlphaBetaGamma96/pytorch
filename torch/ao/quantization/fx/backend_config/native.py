@@ -1,7 +1,7 @@
 import torch
-from .observation_type import ObservationType
 import torch.nn.qat as nnqat
-
+import operator
+from .observation_type import ObservationType
 
 def _get_default_op_backend_config(op, dtype_configs):
     return {
@@ -78,6 +78,16 @@ _DEFAULT_OP_INT8_CONFIGS = [
         torch.nn.functional.layer_norm,
     ]]
 
+_ADD_CONFIG = {
+    "pattern": operator.add,
+    "observation_type": ObservationType.OUTPUT_USE_DIFFERENT_OBSERVER_AS_INPUT,
+    "_is_binary_op_with_binary_scalar_op_variant": True,
+    "dtype_configs": [
+        weighted_op_int8_dtype_config,
+    ],
+}
+
+
 def get_native_backend_config_dict():
     """ Get backend for PyTorch Native backend_config_dict (fbgemm/qnnpack)
     """
@@ -87,5 +97,6 @@ def get_native_backend_config_dict():
         "configs": [
             _LINEAR_MODULE_CONFIG,
             *_DEFAULT_OP_INT8_CONFIGS,
+            _ADD_CONFIG,
         ],
     }
