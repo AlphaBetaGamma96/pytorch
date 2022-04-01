@@ -3447,45 +3447,48 @@ Tensor slogdet_backward(const Tensor& grad_logabsdet,
     return unsqueeze_multiple(grad_logabsdet, {-1, -2}, self.dim()) * self.inverse().mH();
   };
 
-  if (self.dim() == 2) {
-    return nonsingular_case_backward(grad_logabsdet, self);
-    /*bool is_singular = self.is_complex() ? signdet.abs().item<double>() == 0 : signdet.item<double>() == 0;
-    if (is_singular) {
-      return singular_case_backward(grad_logabsdet, self);
-    } else {
-      return nonsingular_case_backward(grad_logabsdet, self);
-    }*/
-  } else {
-    auto nonzero_signdet_indices = at::native::toListOfOptionalTensors(self.is_complex() ? at::where(signdet.abs()) : at::where(signdet));
-    c10::optional<Tensor> first_nonzero_signdet_index = nonzero_signdet_indices[0];
+  
+  // if (self.dim() == 2) {
+  //   //bool is_singular = self.is_complex() ? signdet.abs().item<double>() == 0 : signdet.item<double>() == 0;
+  //   //if (is_singular) {
+  //   //  return singular_case_backward(grad_logabsdet, self);
+  //   //} else {
+  //     return nonsingular_case_backward(grad_logabsdet, self);
+  //   //}
+  // } else {
+  //   auto nonzero_signdet_indices = at::native::toListOfOptionalTensors(self.is_complex() ? at::where(signdet.abs()) : at::where(signdet));
+  //   c10::optional<Tensor> first_nonzero_signdet_index = nonzero_signdet_indices[0];
 
-    if (first_nonzero_signdet_index->size(0) == logabsdet.numel()) {  // all log determinants are finite (non-singular)
-      return nonsingular_case_backward(grad_logabsdet, self);
-    }
+  //   if (first_nonzero_signdet_index->size(0) == logabsdet.numel()) {  // all log determinants are finite (non-singular)
+  //     return nonsingular_case_backward(grad_logabsdet, self);
+  //   }
 
-    auto zero_signdet_indices = at::native::toListOfOptionalTensors(at::where(signdet == 0));
-    c10::optional<Tensor> first_zero_signdet_index = zero_signdet_indices[0];
+  //   auto zero_signdet_indices = at::native::toListOfOptionalTensors(at::where(signdet == 0));
+  //   c10::optional<Tensor> first_zero_signdet_index = zero_signdet_indices[0];
 
-    if (first_zero_signdet_index->size(0) == logabsdet.numel()) {  // all log determinants are -inf (singular)
-      return singular_case_backward(grad_logabsdet, self);
-    }
+  //   if (first_zero_signdet_index->size(0) == logabsdet.numel()) {  // all log determinants are -inf (singular)
+  //     return singular_case_backward(grad_logabsdet, self);
+  //   }
 
-    Tensor grad_slogdet = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
+  //   Tensor grad_slogdet = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
 
-    // invertible case
-    grad_slogdet.index_put_(/*indices=*/nonzero_signdet_indices,
-                            // NOLINTNEXTLINE(bugprone-argument-comment)
-                            /*value=*/nonsingular_case_backward(grad_logabsdet.index(nonzero_signdet_indices),
-                                                                self.index(nonzero_signdet_indices)));
+  //   // invertible case
+  //   grad_slogdet.index_put_(/*indices=*/nonzero_signdet_indices,
+  //                           // NOLINTNEXTLINE(bugprone-argument-comment)
+  //                           /*value=*/nonsingular_case_backward(grad_logabsdet.index(nonzero_signdet_indices),
+  //                                                               self.index(nonzero_signdet_indices)));
 
-    // non-invertible case, uses SVD
-    grad_slogdet.index_put_(/*indices=*/zero_signdet_indices,
-                            // NOLINTNEXTLINE(bugprone-argument-comment)
-                            /*value=*/singular_case_backward(grad_logabsdet.index(zero_signdet_indices),
-                                                             self.index(zero_signdet_indices)));
+  //   // non-invertible case, uses SVD
+  //   grad_slogdet.index_put_(/*indices=*/zero_signdet_indices,
+  //                           // NOLINTNEXTLINE(bugprone-argument-comment)
+  //                           /*value=*/singular_case_backward(grad_logabsdet.index(zero_signdet_indices),
+  //                                                            self.index(zero_signdet_indices)));
 
-    return grad_slogdet;
-  }
+  //   return grad_slogdet;
+  // }
+  
+  return nonsingular_case_backward(grad_logabsdet, self);
+
 }
 
 // Reference:
